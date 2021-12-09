@@ -1,7 +1,7 @@
 name: Developer Certificate of Origin Check
 
 on: [pull_request]
-#hello
+
 jobs:
   check:
     runs-on: ubuntu-latest
