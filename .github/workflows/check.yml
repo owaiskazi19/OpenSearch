@@ -10,6 +10,9 @@ jobs:
       JAVA8_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/8.0.292-1/x64/
       JAVA14_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/14.0.2-12/x64/
       JAVA17_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/17.0.1-12/x64/
+    strategy:
+      fail-fast: false
+      max-parallel: 4
     steps:
       - name: Checkout OpenSearch 
         uses: actions/checkout@v2
