@@ -4,10 +4,13 @@ on:
     types:
       - closed
       - labeled
-
+#backport
 jobs:
   backport:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     name: Backport
     steps:
       - name: Backport
