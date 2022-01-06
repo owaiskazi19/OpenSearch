@@ -194,7 +194,14 @@ tasks.register("verifyVersions") {
 
 boolean bwc_tests_enabled = true
 /* place an issue link here when committing bwc changes */
-final String bwc_tests_disabled_issue = ""
+String bwc_tests_disabled_issue = ""
+boolean bwc_test_disabled = project.getProperties().get("disableBwcTest")
+println "${bwc_test_disabled}"
+if (bwc_test_disabled == true){
+  bwc_tests_enabled = false
+  bwc_tests_disabled_issue = "issue"
+}
+println "BWC TEST ${bwc_tests_enabled} ${bwc_tests_disabled_issue}"
 if (bwc_tests_enabled == false) {
   if (bwc_tests_disabled_issue.isEmpty()) {
     throw new GradleException("bwc_tests_disabled_issue must be set when bwc_tests_enabled == false")
