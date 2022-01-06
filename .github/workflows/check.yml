@@ -84,4 +84,8 @@ jobs:
         #     echo Gradle Check Failed!
         #     exit $GRADLE_CHECK_STATUS
         #   fi
-        run: ./gradlew check --parallel
+        run: ./gradlew check -PdisableBwcTest=true --parallel
+
+      - name: Run BWC Test
+        run: ./gradlew bwcTest
+
