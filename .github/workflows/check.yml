@@ -5,11 +5,11 @@ jobs:
   check:
     runs-on: self-hosted
     env:
-      JAVA_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/14.0.2-12/x64/
-      JAVA11_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/11.0.11-9/x64/
-      JAVA8_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/8.0.292-1/x64/
-      JAVA14_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/14.0.2-12/x64/
-      JAVA17_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/17.0.1-12/x64/
+      JAVA_HOME: /home/ubuntu/actions-runner/_work/_tool/Java_Adopt_jdk/14.0.2-12/x64
+      JAVA11_HOME: /home/ubuntu/actions-runner/_work/_tool/Java_Adopt_jdk/11.0.13-8/x64/
+      JAVA8_HOME: /home/ubuntu/actions-runner/_work/_tool/Java_Adopt_jdk/8.0.312-7/x64/
+      JAVA14_HOME: /home/ubuntu/actions-runner/_work/_tool/Java_Adopt_jdk/14.0.2-12/x64
+      JAVA17_HOME: /home/ubuntu/actions-runner/_work/_tool/Java_Adopt_jdk/17.0.1-12/x64
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -66,10 +66,10 @@ jobs:
       
       - name: Run env
         run: env
-      - name: Print jdk
-        run: |
-          echo "PRINT HERE"
-          ls /opt/hostedtoolcache/Java_Adopt_jdk/14.0.2-12/
+      # - name: Print jdk
+      #   run: |
+      #     echo "PRINT HERE"
+      #     ls /opt/hostedtoolcache/Java_Adopt_jdk/14.0.2-12/
 
 
       - uses: gradle/gradle-build-action@v2
