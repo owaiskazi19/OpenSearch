@@ -3,7 +3,7 @@ on: [pull_request]
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       JAVA_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/14.0.2-12/x64/
       JAVA11_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/11.0.11-9/x64/
