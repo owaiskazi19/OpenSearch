@@ -25,8 +25,6 @@ phases:
   install:
     run-as: root
     commands:
-      - lsb_release -a
-      - apt-get update && apt-get install -y sudo
       - apt-get update && apt-get install -y openjdk-8-jdk wget
       - apt-get update && apt-get install -y openjdk-11-jdk
       #- apt-get update && apt list | grep openjdk
@@ -48,24 +46,24 @@ phases:
     #If you specify runtime-versions and use an image other than Ubuntu standard image 2.0, the build fails.
     #runtime-versions:
      # java: corretto11
-  pre_build:
-    run-as: codebuild-user
-    commands:
-      - ls -la
-      # - chmod +x ~
-      - mkdir -p /tmp/gradle-user/.java/.systemPrefs
-      - mkdir /tmp/gradle-user/.java/.userPrefs
-      - chown -R codebuild-user:codebuild-user /tmp/gradle-user/.java
-      - chmod -R 755 /tmp/gradle-user/.java
-      - echo "-Djava.util.prefs.systemRoot=/tmp/gradle-user/.java -Djava.util.prefs.userRoot=/tmp/gradle-user/.java/.userPrefs"
-      - export JAVA_OPTS="-Djava.util.prefs.systemRoot=/tmp/gradle-user/.java -Djava.util.prefs.userRoot=/tmp/gradle-user/.java/.userPrefs"
+  # pre_build:
+  #   run-as: codebuild-user
+  #   commands:
+  #     - ls -la
+  #     # - chmod +x ~
+  #     - mkdir -p /tmp/gradle-user/.java/.systemPrefs
+  #     - mkdir /tmp/gradle-user/.java/.userPrefs
+  #     - chown -R codebuild-user:codebuild-user /tmp/gradle-user/.java
+  #     - chmod -R 755 /tmp/gradle-user/.java
+  #     - echo "-Djava.util.prefs.systemRoot=/tmp/gradle-user/.java -Djava.util.prefs.userRoot=/tmp/gradle-user/.java/.userPrefs"
+  #     - export JAVA_OPTS="-Djava.util.prefs.systemRoot=/tmp/gradle-user/.java -Djava.util.prefs.userRoot=/tmp/gradle-user/.java/.userPrefs"
   build:
     run-as: codebuild-user
     commands:
       - printenv
       # - chown -R codebuild-user:codebuild-user /home/codebuild-user/
       #- ./gradlew precommit
-      - sudo -S ./gradlew check -Djava.util.prefs.userRoot=/tmp/gradle-user/.java/.userPrefs --no-daemon --no-scan
+      - ./gradlew check --no-daemon --no-scan
       # name: version
       # name: version
     #commands:
