@@ -26,6 +26,7 @@ phases:
     run-as: root
     commands:
       - lsb_release -a
+      - apt-get update && apt-get install -y sudo
       - apt-get update && apt-get install -y openjdk-8-jdk wget
       - apt-get update && apt-get install -y openjdk-11-jdk
       #- apt-get update && apt list | grep openjdk
@@ -61,10 +62,10 @@ phases:
   build:
     run-as: codebuild-user
     commands:
-      - ls -la 
+      - printenv
       # - chown -R codebuild-user:codebuild-user /home/codebuild-user/
       #- ./gradlew precommit
-      - ./gradlew check -Djava.util.prefs.userRoot=/tmp/gradle-user/.java/.userPrefs --no-daemon --no-scan
+      - sudo -S ./gradlew check -Djava.util.prefs.userRoot=/tmp/gradle-user/.java/.userPrefs --no-daemon --no-scan
       # name: version
       # name: version
     #commands:
