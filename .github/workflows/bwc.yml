@@ -1,4 +1,4 @@
-name: Gradle Check
+name: BWC Test
 on: [pull_request]
 
 jobs:
@@ -41,51 +41,6 @@ jobs:
           distribution: 'adopt'
           java-version: '14'
           targets: 'JDK_14'
-      
-    
-
-      # - uses: AdoptOpenJDK/install-jdk@v1
-      #   id: setup-java-11
-      #   with:
-      #     version: '11'
-      #     targets: 'JDK_11'
-
-      # - uses: AdoptOpenJDK/install-jdk@v1
-      #   with:
-      #     version: '8'
-      #     targets: 'JDK_8'
-
-      # - uses: AdoptOpenJDK/install-jdk@v1
-      #   with:
-      #     version: '14'
-
-      # - uses: AdoptOpenJDK/install-jdk@v1
-      #   with:
-      #     version: '17'
-      #     targets: 'JDK_17'
-      
-      - name: Run env
-        run: env
-      - name: Print jdk
-        run: |
-          echo "PRINT HERE"
-          ls /opt/hostedtoolcache/Java_Adopt_jdk/14.0.2-12/
-
-
-      - uses: gradle/gradle-build-action@v2
-      - name: Run Gradle
-        # run: |
-        #   echo "./gradlew check --no-daemon --no-scan --parallel"
-        #   ./gradlew check --no-daemon --no-scan --parallel
-        #   GRADLE_CHECK_STATUS=$?
-
-        #   if [ "$GRADLE_CHECK_STATUS" != 0 ]
-        #   then
-        #     echo Gradle Check Failed!
-        #     exit $GRADLE_CHECK_STATUS
-        #   fi
-        run: ./gradlew check -PdisableBwcTest=true --parallel
-
-      # - name: Run BWC Test
-      #   run: ./gradlew bwcTest
-
+        
+      - name: Run BWC Test
+        run: ./gradlew bwcTest
