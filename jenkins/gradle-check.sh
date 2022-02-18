@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 IFS=`echo -ne "\n\b"`
 
 docker ps
-docker stop `docker ps -qa` > /dev/null 2>&1
+#docker stop `docker ps -qa` > /dev/null 2>&1
 
 cd search
 

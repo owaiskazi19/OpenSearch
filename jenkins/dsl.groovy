@@ -24,7 +24,7 @@ job("Gradle_Check_backup") {
 	concurrentBuild(true)
 	steps {
 		shell("""#!/bin/bash
-bash opensearch-infra/jenkins/jobs/OpenSearch_CI/PR_Checks/Gradle_Check/gradle-check-assemble.sh""")
+bash jenkins/gradle-check.sh""")
 	}
 	publishers {
 		archiveArtifacts {
