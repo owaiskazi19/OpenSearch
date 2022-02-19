@@ -1,12 +1,12 @@
 ---
-"Test cat nodes output":
+Test cat nodes output:
 
   - do:
       cat.nodes: {}
 
   - match:
       $body: |
-        /  #ip                          heap.percent        ram.percent     cpu         load_1m                load_5m                load_15m               node.role                   master          name
+        /  # ip                          heap.percent        ram.percent     cpu         load_1m                load_5m                load_15m               node.role                   master          name
         ^  ((\d{1,3}\.){3}\d{1,3}  \s+  \d+            \s+  \d*         \s+ (-)?\d* \s+ ((-)?\d*(\.\d+)?)? \s+ ((-)?\d*(\.\d+)?)?\s+  ((-)?\d*(\.\d+)?)? \s+ (-|[cdhilmrstvw]{1,11}) \s+ [-*x]     \s+   (\S+\s?)+     \n)+  $/
 
   - do:
@@ -59,7 +59,7 @@
         /^      http \n ((\d{1,3}\.){3}\d{1,3}:\d{1,5}\n)+  $/
 
 ---
-"Additional disk information":
+Additional disk information:
   - do:
       cat.nodes:
         h: diskAvail,diskTotal,diskUsed,diskUsedPercent
@@ -87,7 +87,7 @@
            (\s* \d+(\.\d+)?[ptgmk]?b \s+ \d+(\.\d+)?[ptgmk]?b \s+ \d+(\.\d+)?[ptgmk]?b\s+ (100\.00 | \d{1,2}\.\d{2}) \n)+  $/
 
 ---
-"Test cat nodes output with full_id set":
+Test cat nodes output with full_id set:
 
   - do:
       cat.nodes:
@@ -103,6 +103,5 @@
         full_id: true
   # check for a 5+ char non-whitespace character string
   - match:
-      $body: |
+      $body: |-
         /^(\S{5,}\n)+$/
-

@@ -1,3 +1,4 @@
+---
 name: Gradle Precommit
 on: [pull_request]
 
@@ -12,5 +13,5 @@ jobs:
           java-version: 11
           distribution: adopt
       - name: Run Gradle
-        run: |
+        run: |-
           ./gradlew precommit --parallel

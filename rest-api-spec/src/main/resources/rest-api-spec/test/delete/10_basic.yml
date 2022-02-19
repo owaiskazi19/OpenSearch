@@ -1,21 +1,21 @@
 ---
-"Basic":
+Basic:
 
- - skip:
-      version: " - 6.99.99"
+  - skip:
+      version: ' - 6.99.99'
       reason: types are required in requests before 7.0.0
 
- - do:
+  - do:
       index:
-          index:  test_1
-          id:     1
-          body:   { foo: bar }
+        index: test_1
+        id: 1
+        body: {foo: bar}
 
- - match:   { _version: 1 }
+  - match: {_version: 1}
 
- - do:
+  - do:
       delete:
-          index:  test_1
-          id:     1
+        index: test_1
+        id: 1
 
- - match:   { _version: 2 }
+  - match: {_version: 2}

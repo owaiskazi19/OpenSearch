@@ -1,3 +1,4 @@
+---
 name: Increment Version
 
 on:
@@ -5,7 +6,7 @@ on:
     tags:
       - '*.*.*'
 
-jobs:  
+jobs:
   build:
     runs-on: ubuntu-latest
     steps:
@@ -57,7 +58,7 @@ jobs:
         with:
           token: ${{ steps.github_app_token.outputs.token }}
           base: ${{ env.BASE }}
-          branch: 'create-pull-request/patch-${{ env.BASE }}'
+          branch: create-pull-request/patch-${{ env.BASE }}
           commit-message: Incremented version to ${{ env.NEXT_VERSION }}
           delete-branch: true
           title: '[AUTO] Incremented version to ${{ env.NEXT_VERSION }}.'
@@ -81,10 +82,11 @@ jobs:
         with:
           token: ${{ steps.github_app_token.outputs.token }}
           base: ${{ env.BASE_X }}
-          branch: 'create-pull-request/patch-${{ env.BASE_X }}'
+          branch: create-pull-request/patch-${{ env.BASE_X }}
           commit-message: Added bwc version ${{ env.NEXT_VERSION }}
           delete-branch: true
-          title: '[AUTO] [${{ env.BASE_X }}] Added bwc version ${{ env.NEXT_VERSION }}.'
+          title: '[AUTO] [${{ env.BASE_X }}] Added bwc version ${{ env.NEXT_VERSION
+            }}.'
           body: |
             I've noticed that a new tag ${{ env.TAG }} was pushed, and added a bwc version ${{ env.NEXT_VERSION }}.
 
@@ -105,9 +107,9 @@ jobs:
         with:
           token: ${{ steps.github_app_token.outputs.token }}
           base: main
-          branch: 'create-pull-request/patch-main'
+          branch: create-pull-request/patch-main
           commit-message: Added bwc version ${{ env.NEXT_VERSION }}
           delete-branch: true
           title: '[AUTO] [main] Added bwc version ${{ env.NEXT_VERSION }}.'
-          body: |
+          body: |-
             I've noticed that a new tag ${{ env.TAG }} was pushed, and added a bwc version ${{ env.NEXT_VERSION }}.

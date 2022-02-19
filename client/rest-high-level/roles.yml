@@ -1,3 +1,4 @@
+---
 admin:
   cluster:
     - all
@@ -5,8 +6,8 @@ admin:
     - names: '*'
       privileges:
         - all
-  run_as: [ '*' ]
+  run_as: ['*']
   applications:
     - application: '*'
-      privileges: [ '*' ]
-      resources: [ '*' ]
+      privileges: ['*']
+      resources: ['*']

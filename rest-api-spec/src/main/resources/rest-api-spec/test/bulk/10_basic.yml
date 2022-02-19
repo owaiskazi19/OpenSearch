@@ -1,8 +1,8 @@
 ---
-"Array of objects":
+Array of objects:
 
   - skip:
-      version: " - 6.99.99"
+      version: ' - 6.99.99'
       reason: types are required in requests before 7.0.0
 
   - do:
@@ -11,12 +11,12 @@
         body:
           - index:
               _index: test_index
-              _id:    test_id
+              _id: test_id
           - f1: v1
             f2: 42
           - index:
               _index: test_index
-              _id:    test_id2
+              _id: test_id2
           - f1: v2
             f2: 47
 
@@ -27,10 +27,10 @@
   - match: {count: 2}
 
 ---
-"Empty _id":
+Empty _id:
 
   - skip:
-      version: " - 6.99.99"
+      version: ' - 6.99.99'
       reason: types are required in requests before 7.0.0
 
   - do:
@@ -48,24 +48,24 @@
           - index:
               _index: test
           - f: 3
-  - match: { errors: true }
-  - match: { items.0.index.status: 400 }
-  - match: { items.0.index.error.type: illegal_argument_exception }
-  - match: { items.0.index.error.reason: if _id is specified it must not be empty }
-  - match: { items.1.index.result: created }
-  - match: { items.2.index.result: created }
+  - match: {errors: true}
+  - match: {items.0.index.status: 400}
+  - match: {items.0.index.error.type: illegal_argument_exception}
+  - match: {items.0.index.error.reason: if _id is specified it must not be empty}
+  - match: {items.1.index.result: created}
+  - match: {items.2.index.result: created}
 
   - do:
       count:
         index: test
 
-  - match: { count: 2 }
+  - match: {count: 2}
 
 ---
-"Empty _id with op_type create":
+Empty _id with op_type create:
   - skip:
-      version: " - 7.4.99"
-      reason: "auto id + op type create only supported since 7.5"
+      version: ' - 7.4.99'
+      reason: auto id + op type create only supported since 7.5
 
   - do:
       bulk:
@@ -89,45 +89,46 @@
               _index: test
               op_type: create
           - f: 5
-  - match: { errors: true }
-  - match: { items.0.index.status: 400 }
-  - match: { items.0.index.error.type: illegal_argument_exception }
-  - match: { items.0.index.error.reason: if _id is specified it must not be empty }
-  - match: { items.1.index.result: created }
-  - match: { items.2.index.result: created }
-  - match: { items.3.create.result: created }
-  - match: { items.4.create.result: created }
+  - match: {errors: true}
+  - match: {items.0.index.status: 400}
+  - match: {items.0.index.error.type: illegal_argument_exception}
+  - match: {items.0.index.error.reason: if _id is specified it must not be empty}
+  - match: {items.1.index.result: created}
+  - match: {items.2.index.result: created}
+  - match: {items.3.create.result: created}
+  - match: {items.4.create.result: created}
 
   - do:
       count:
         index: test
 
-  - match: { count: 4 }
+  - match: {count: 4}
 
 
 ---
-"empty action":
+empty action:
 
   - skip:
-      version: " - 6.99.99"
+      version: ' - 6.99.99'
       features: headers
       reason: types are required in requests before 7.0.0
 
   - do:
-      catch: /Malformed action\/metadata line \[3\], expected FIELD_NAME but found \[END_OBJECT\]/
+      catch: /Malformed action\/metadata line \[3\], expected FIELD_NAME but found
+        \[END_OBJECT\]/
       headers:
         Content-Type: application/json
       bulk:
         body: |
-           {"index": {"_index": "test_index", "_id": "test_id"}}
-           {"f1": "v1", "f2": 42}
-           {}
+          {"index": {"_index": "test_index", "_id": "test_id"}}
+          {"f1": "v1", "f2": 42}
+          {}
 
 ---
-"When setting require_alias flag per request":
+When setting require_alias flag per request:
   - skip:
-      version: " - 7.9.99"
-      reason: "require_alias flag was added in version 7.10"
+      version: ' - 7.9.99'
+      reason: require_alias flag was added in version 7.10
 
   - do:
       indices.create:
@@ -154,23 +155,25 @@
           - create:
               _index: test_require_alias
           - f: 4
-  - match: { errors: true }
-  - match: { items.0.index.status: 404 }
-  - match: { items.0.index.error.type: index_not_found_exception }
-  - match: { items.0.index.error.reason: "no such index [new_index_not_created] and [require_alias] request flag is [true] and [new_index_not_created] is not an alias" }
-  - match: { items.1.index.result: created }
-  - match: { items.2.index.result: created }
-  - match: { items.3.create.result: created }
+  - match: {errors: true}
+  - match: {items.0.index.status: 404}
+  - match: {items.0.index.error.type: index_not_found_exception}
+  - match: {items.0.index.error.reason: 'no such index [new_index_not_created] and
+        [require_alias] request flag is [true] and [new_index_not_created] is not
+        an alias'}
+  - match: {items.1.index.result: created}
+  - match: {items.2.index.result: created}
+  - match: {items.3.create.result: created}
 
   - do:
       catch: missing
       indices.get:
         index: new_index_not_created
 ---
-"When setting require_alias flag":
+When setting require_alias flag:
   - skip:
-      version: " - 7.9.99"
-      reason: "require_alias flag was added in version 7.10"
+      version: ' - 7.9.99'
+      reason: require_alias flag was added in version 7.10
 
   - do:
       indices.create:
@@ -194,22 +197,24 @@
           - index:
               _index: test_require_alias
           - f: 3
-  - match: { errors: true }
-  - match: { items.0.index.status: 404 }
-  - match: { items.0.index.error.type: index_not_found_exception }
-  - match: { items.0.index.error.reason: "no such index [new_index_not_created] and [require_alias] request flag is [true] and [new_index_not_created] is not an alias" }
-  - match: { items.1.index.result: created }
-  - match: { items.2.index.result: created }
+  - match: {errors: true}
+  - match: {items.0.index.status: 404}
+  - match: {items.0.index.error.type: index_not_found_exception}
+  - match: {items.0.index.error.reason: 'no such index [new_index_not_created] and
+        [require_alias] request flag is [true] and [new_index_not_created] is not
+        an alias'}
+  - match: {items.1.index.result: created}
+  - match: {items.2.index.result: created}
 
   - do:
       catch: missing
       indices.get:
         index: new_index_not_created
 ---
-"Return item-level error when no write index defined for an alias":
+Return item-level error when no write index defined for an alias:
   - skip:
-      version: " - 7.8.99"
-      reason: "supporting code added in 7.9.0"
+      version: ' - 7.8.99'
+      reason: supporting code added in 7.9.0
 
   - do:
       indices.create:
@@ -233,8 +238,9 @@
           - '{"index": {"_index": "test_index"}}'
           - '{"field": "test"}'
 
-  - match: { errors: true }
-  - match: { items.0.index.status: 400 }
-  - match: { items.0.index.error.type: illegal_argument_exception }
-  - match: { items.0.index.error.reason: "no write index is defined for alias [test_index]. The write index may be explicitly disabled using is_write_index=false or the alias points to multiple indices without one being designated as a write index" }
-
+  - match: {errors: true}
+  - match: {items.0.index.status: 400}
+  - match: {items.0.index.error.type: illegal_argument_exception}
+  - match: {items.0.index.error.reason: 'no write index is defined for alias [test_index].
+        The write index may be explicitly disabled using is_write_index=false or the
+        alias points to multiple indices without one being designated as a write index'}

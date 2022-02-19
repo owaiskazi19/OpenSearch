@@ -1,7 +1,8 @@
+---
 name: Link Checker
 on:
   schedule:
-    - cron:  '0 0 * * *'
+    - cron: 0 0 * * *
 jobs:
   linkchecker:
     if: github.repository == 'opensearch-project/OpenSearch'
@@ -13,7 +14,8 @@ jobs:
         id: lychee
         uses: lycheeverse/lychee-action@v1.2.0
         with:
-          args: --accept=200,403,429 --exclude-mail **/*.html **/*.md **/*.txt **/*.json --exclude-file .lychee.excludes
+          args: --accept=200,403,429 --exclude-mail **/*.html **/*.md **/*.txt **/*.json
+            --exclude-file .lychee.excludes
           fail: true
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
