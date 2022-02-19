@@ -1,5 +1,4 @@
 ---
-"Ping":
-    - do:      { ping: {}}
-    - is_true: ''
-
+Ping:
+  - do: {ping: {}}
+  - is_true: ''

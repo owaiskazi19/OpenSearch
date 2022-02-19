@@ -1,3 +1,4 @@
+---
 version: '3.7'
 services:
 
@@ -8,10 +9,10 @@ services:
     volumes:
       - ./build/distributions/example-app.war:/opt/jboss/wildfly/standalone/deployments/example-app.war
     ports:
-      - "8080"
+      - '8080'
     healthcheck:
       start_period: 5s
-      test: ["CMD", "grep", "Admin console listening on", "/opt/jboss/wildfly/standalone/log/server.log"]
+      test: [CMD, grep, Admin console listening on, /opt/jboss/wildfly/standalone/log/server.log]
       interval: 2s
       timeout: 1s
       retries: 5
@@ -29,7 +30,7 @@ services:
         hard: 65536
     healthcheck:
       start_period: 15s
-      test: ["CMD", "curl", "-f", "-k", "http://localhost:9200"]
+      test: [CMD, curl, -f, -k, http://localhost:9200]
       interval: 10s
       timeout: 2s
       retries: 5

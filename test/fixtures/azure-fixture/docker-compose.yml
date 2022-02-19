@@ -1,3 +1,4 @@
+---
 version: '3'
 services:
   azure-fixture:
@@ -7,7 +8,7 @@ services:
     volumes:
       - ./testfixtures_shared/shared:/fixture/shared
     ports:
-      - "8091"
+      - '8091'
 
   azure-fixture-other:
     build:
@@ -16,7 +17,7 @@ services:
     volumes:
       - ./testfixtures_shared/shared:/fixture/shared
     ports:
-      - "8091"
+      - '8091'
 
   azure-fixture-repositories-metering:
     build:
@@ -25,4 +26,4 @@ services:
     volumes:
       - ./testfixtures_shared/shared:/fixture/shared
     ports:
-      - "8091"
+      - '8091'

@@ -1,0 +1,14 @@
+---
+name: yaml-lint
+
+on: [pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+      - run: yamllint $(git ls-files '*.yaml' '*.yml')
