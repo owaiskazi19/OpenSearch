@@ -1,0 +1,20 @@
+pipeline {
+    agent {
+         docker {
+            label 'AL2-X64'
+            image 'opensearchstaging/ci-runner:centos7-x64-arm64-jdkmulti-node10.24.1-cypress6.9.1-20211028'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+            alwaysPull true
+        }
+    }
+
+    stages {
+        stage('gradle-check') {
+            steps {
+                script {
+                    sh './gradlew check --no-daemon --no-scan'
+                }
+            }    
+        }
+    }
+}
