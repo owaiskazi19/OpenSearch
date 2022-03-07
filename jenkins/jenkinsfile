@@ -8,6 +8,14 @@ pipeline {
         }
     }
 
+    environment {
+        JAVA11_HOME="/opt/java/openjdk-11"
+        JAVA14_HOME="/usr/lib/jvm/adoptopenjdk-14-hotspot"
+        JAVA17_HOME="/opt/java/openjdk-17"
+        JAVA8_HOME="/opt/java/openjdk-8"
+        JAVA_HOME="/usr/lib/jvm/adoptopenjdk-14-hotspot"
+    }
+
     stages {
         stage('gradle-check') {
             steps {
