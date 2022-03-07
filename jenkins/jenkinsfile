@@ -20,7 +20,18 @@ pipeline {
         stage('gradle-check') {
             steps {
                 script {
+                    sh 'echo gradle check'
                     sh './gradlew check --no-daemon --no-scan'
+                }
+            }
+            post {
+                always {
+                    sh "chmod +x -R ${env.WORKSPACE}"
+                    sh('./jenkins/post-build-task1.sh')
+                }
+                failure {
+                    sh "chmod +x -R ${env.WORKSPACE}"
+                    sh('./jenkins/post-build-task2.sh')
                 }
             }    
         }
