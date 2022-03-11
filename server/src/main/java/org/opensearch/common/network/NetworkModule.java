@@ -184,6 +184,42 @@ public final class NetworkModule {
         }
     }
 
+    /**
+     * Creates a network module that custom networking classes of the extension can be plugged into.
+     * @param settings The settings for the node
+     */
+    public NetworkModule(
+        Settings settings,
+        NetworkPlugin plugin,
+        ThreadPool threadPool,
+        PageCacheRecycler pageCacheRecycler,
+        CircuitBreakerService circuitBreakerService,
+        NamedWriteableRegistry namedWriteableRegistry,
+        NetworkService networkService
+    ) {
+        this.settings = settings;
+        Map<String, Supplier<Transport>> transportFactory = plugin.getTransports(
+            settings,
+            threadPool,
+            pageCacheRecycler,
+            circuitBreakerService,
+            namedWriteableRegistry,
+            networkService
+        );
+        for (Map.Entry<String, Supplier<Transport>> entry : transportFactory.entrySet()) {
+            registerTransport(entry.getKey(), entry.getValue());
+        }
+        List<TransportInterceptor> transportInterceptors = plugin.getTransportInterceptors(
+            namedWriteableRegistry,
+            threadPool.getThreadContext()
+        );
+        for (TransportInterceptor interceptor : transportInterceptors) {
+            registerTransportInterceptor(interceptor);
+        }
+
+    }
+
+
     /** Adds a transport implementation that can be selected by setting {@link #TRANSPORT_TYPE_KEY}. */
     private void registerTransport(String key, Supplier<Transport> factory) {
         if (transportFactories.putIfAbsent(key, factory) != null) {
