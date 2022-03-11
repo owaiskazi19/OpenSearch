@@ -1,12 +1,15 @@
+lib = library(identifier: "jenkins@20211118", retriever: legacySCM(scm))
+
 pipeline {
-    agent {
-         docker {
-            label 'AL2-X64'
-            image 'opensearchstaging/ci-runner:centos7-x64-arm64-jdkmulti-node10.24.1-cypress6.9.1-20211028'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-            alwaysPull true
-        }
-    }
+    // agent {
+    //      docker {
+    //         label 'AL2-X64'
+    //         image 'opensearchstaging/ci-runner:centos7-x64-arm64-jdkmulti-node10.24.1-cypress6.9.1-20211028'
+    //         args '-v /var/run/docker.sock:/var/run/docker.sock'
+    //         alwaysPull true
+    //     }
+    // }
+    agent any
 
     environment {
         JAVA11_HOME="/opt/java/openjdk-11"
@@ -21,18 +24,19 @@ pipeline {
             steps {
                 script {
                     sh 'echo gradle check'
-                    sh './gradlew check --no-daemon --no-scan'
+                    //sh './gradlew check --no-daemon --no-scan'
                 }
             }
             post {
                 always {
-                    sh "chmod +x -R ${env.WORKSPACE}"
-                    sh('./jenkins/post-build-task1.sh')
+                    createIssue()
+                    // sh "chmod +x -R ${env.WORKSPACE}"
+                    // sh('./jenkins/post-build-task1.sh')
                 }
-                failure {
-                    sh "chmod +x -R ${env.WORKSPACE}"
-                    sh('./jenkins/post-build-task2.sh')
-                }
+                //failure {
+                    // sh "chmod +x -R ${env.WORKSPACE}"
+                    // sh('./jenkins/post-build-task2.sh')
+                //}
             }    
         }
     }
