@@ -102,13 +102,14 @@ public class TransportService extends AbstractLifecycleComponent
     protected final Transport transport;
     protected final ConnectionManager connectionManager;
     protected final ThreadPool threadPool;
-    protected final ClusterName clusterName;
-    protected final TaskManager taskManager;
-    private final TransportInterceptor.AsyncSender asyncSender;
-    private final Function<BoundTransportAddress, DiscoveryNode> localNodeFactory;
-    private final boolean remoteClusterClient;
-    private final Transport.ResponseHandlers responseHandlers;
-    private final TransportInterceptor interceptor;
+    protected ClusterName clusterName;
+    protected TaskManager taskManager;
+    private Boolean extension = false;
+    private TransportInterceptor.AsyncSender asyncSender;
+    private Function<BoundTransportAddress, DiscoveryNode> localNodeFactory;
+    private boolean remoteClusterClient;
+    private Transport.ResponseHandlers responseHandlers;
+    private TransportInterceptor interceptor;
 
     // An LRU (don't really care about concurrency here) that holds the latest timed out requests so if they
     // do show up, we can print more descriptive information about them
@@ -131,7 +132,7 @@ public class TransportService extends AbstractLifecycleComponent
     volatile String[] tracerLogInclude;
     volatile String[] tracerLogExclude;
 
-    private final RemoteClusterService remoteClusterService;
+    private RemoteClusterService remoteClusterService;
 
     /** if set will call requests sent to this id to shortcut and executed locally */
     volatile DiscoveryNode localNode = null;
@@ -228,6 +229,32 @@ public class TransportService extends AbstractLifecycleComponent
             (request, channel, task) -> channel.sendResponse(new HandshakeResponse(localNode, clusterName, localNode.getVersion()))
         );
     }
+
+    public TransportService(
+        Transport transport,
+        ThreadPool threadPool,
+        TransportInterceptor transportInterceptor,
+        ConnectionManager connectionManager,
+        Boolean extension
+    ) {
+        this.transport = transport;
+        this.threadPool = threadPool;
+        this.connectionManager = connectionManager;
+        this.extension = extension;
+        responseHandlers = transport.getResponseHandlers();
+        registerRequestHandler(
+            HANDSHAKE_ACTION_NAME,
+            ThreadPool.Names.SAME,
+            false,
+            false,
+            HandshakeRequest::new,
+            (request, channel, task) -> channel.sendResponse(new HandshakeResponse(localNode, clusterName, localNode.getVersion()))
+        );
+        this.interceptor = transportInterceptor;
+        this.asyncSender = interceptor.interceptSender(this::sendRequestInternal);
+        tracerLog = Loggers.getLogger(logger, ".tracer");
+    }
+
 
     public RemoteClusterService getRemoteClusterService() {
         return remoteClusterService;
