@@ -242,14 +242,6 @@ public class TransportService extends AbstractLifecycleComponent
         this.connectionManager = connectionManager;
         this.extension = extension;
         responseHandlers = transport.getResponseHandlers();
-        registerRequestHandler(
-            HANDSHAKE_ACTION_NAME,
-            ThreadPool.Names.SAME,
-            false,
-            false,
-            HandshakeRequest::new,
-            (request, channel, task) -> channel.sendResponse(new HandshakeResponse(localNode, clusterName, localNode.getVersion()))
-        );
         this.interceptor = transportInterceptor;
         this.asyncSender = interceptor.interceptSender(this::sendRequestInternal);
         tracerLog = Loggers.getLogger(logger, ".tracer");
@@ -300,11 +292,14 @@ public class TransportService extends AbstractLifecycleComponent
                 logger.info("profile [{}]: {}", entry.getKey(), entry.getValue());
             }
         }
-        localNode = localNodeFactory.apply(transport.boundAddress());
 
-        if (remoteClusterClient) {
-            // here we start to connect to the remote clusters
-            remoteClusterService.initializeRemoteClusters();
+        if(extension == false) {
+            localNode = localNodeFactory.apply(transport.boundAddress());
+
+            if (remoteClusterClient) {
+                // here we start to connect to the remote clusters
+                remoteClusterService.initializeRemoteClusters();
+            }
         }
     }
 
