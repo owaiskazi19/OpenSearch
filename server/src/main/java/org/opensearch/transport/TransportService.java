@@ -70,6 +70,7 @@ import org.opensearch.threadpool.ThreadPool;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -236,8 +237,9 @@ public class TransportService extends AbstractLifecycleComponent
         ThreadPool threadPool,
         TransportInterceptor transportInterceptor,
         ConnectionManager connectionManager,
+        Set<String> taskHeaders,
         Boolean extension
-    ) {
+    ) throws UnknownHostException {
         this.transport = transport;
         this.threadPool = threadPool;
         this.connectionManager = connectionManager;
@@ -248,13 +250,20 @@ public class TransportService extends AbstractLifecycleComponent
         tracerLog = Loggers.getLogger(logger, ".tracer");
         setTracerLogInclude(TransportSettings.TRACE_LOG_INCLUDE_SETTING.get(settings));
         setTracerLogExclude(TransportSettings.TRACE_LOG_EXCLUDE_SETTING.get(settings));
+        taskManager = createTaskManager(settings, threadPool, taskHeaders);
+        this.clusterName = ClusterName.CLUSTER_NAME_SETTING.get(settings);
+        DiscoveryNode extensionNode = new DiscoveryNode(
+            "node_extension",
+            new TransportAddress(InetAddress.getByName("127.0.0.1"), 50586),
+            Version.CURRENT
+        );
         registerRequestHandler(
             HANDSHAKE_ACTION_NAME,
             ThreadPool.Names.SAME,
             false,
             false,
             HandshakeRequest::new,
-            (request, channel, task) -> channel.sendResponse(new HandshakeResponse(localNode, clusterName, localNode.getVersion()))
+            (request, channel, task) -> channel.sendResponse(new HandshakeResponse(extensionNode, clusterName, extensionNode.getVersion()))
         );
     }
 
