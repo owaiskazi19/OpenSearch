@@ -231,6 +231,7 @@ public class TransportService extends AbstractLifecycleComponent
     }
 
     public TransportService(
+        Settings settings,
         Transport transport,
         ThreadPool threadPool,
         TransportInterceptor transportInterceptor,
@@ -245,6 +246,16 @@ public class TransportService extends AbstractLifecycleComponent
         this.interceptor = transportInterceptor;
         this.asyncSender = interceptor.interceptSender(this::sendRequestInternal);
         tracerLog = Loggers.getLogger(logger, ".tracer");
+        setTracerLogInclude(TransportSettings.TRACE_LOG_INCLUDE_SETTING.get(settings));
+        setTracerLogExclude(TransportSettings.TRACE_LOG_EXCLUDE_SETTING.get(settings));
+        registerRequestHandler(
+            HANDSHAKE_ACTION_NAME,
+            ThreadPool.Names.SAME,
+            false,
+            false,
+            HandshakeRequest::new,
+            (request, channel, task) -> channel.sendResponse(new HandshakeResponse(localNode, clusterName, localNode.getVersion()))
+        );
     }
 
 
