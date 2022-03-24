@@ -1,5 +1,3 @@
-lib = library(identifier: "jenkins@20211118", retriever: legacySCM(scm))
-
 pipeline {
     agent {
          docker {
