@@ -35,13 +35,10 @@ USER=$(echo $PRINC | tr "/" "_")
 
 VDIR=/fixture
 RESOURCES=$VDIR/src/main/resources
-PROV_DIR=$RESOURCES/provision
 ENVPROP_FILE=$RESOURCES/env.properties
 BUILD_DIR=$VDIR/build
-CONF_DIR=$BUILD_DIR/conf
 KEYTAB_DIR=$BUILD_DIR/keytabs
 LOCALSTATEDIR=/etc
-LOGDIR=/var/log/krb5
 
 mkdir -p $KEYTAB_DIR
 
