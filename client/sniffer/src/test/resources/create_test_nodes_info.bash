@@ -38,17 +38,18 @@ function do_version() {
 
     tar xf ../opensearch-min-${version}-linux-x64.tar.gz
     local http_port=9200
+    local cluster_manager initial_cluster_manager_nodes data
     for node in ${nodes}; do
         mkdir ${node}
         cp -r opensearch-${version}/* ${node}
-        local cluster_manager=$([[ "$node" =~ ^m.* ]] && echo 'cluster_manager,' || echo '')
+        cluster_manager=$([[ "$node" =~ ^m.* ]] && echo 'cluster_manager,' || echo '')
         # 'cluster_manager' role is add in version 2.x and above, use 'master' role in 1.x
         cluster_manager=$([[ ! "$cluster_manager" == '' && ${version} =~ ^1\. ]] && echo 'master,' || echo ${cluster_manager})
-        local data=$([[ "$node" =~ ^d.* ]] && echo 'data,' || echo '')
+        data=$([[ "$node" =~ ^d.* ]] && echo 'data,' || echo '')
         # m2 is always cluster_manager and data for these test just so we have a node like that
         data=$([[ "$node" == 'm2' ]] && echo 'data,' || echo ${data})
         # setting name 'cluster.initial_cluster_manager_nodes' is add in version 2.x and above
-        local initial_cluster_manager_nodes=$([[ ${version} =~ ^1\. ]] && echo 'initial_master_nodes' || echo 'initial_cluster_manager_nodes')
+        initial_cluster_manager_nodes=$([[ ${version} =~ ^1\. ]] && echo 'initial_master_nodes' || echo 'initial_cluster_manager_nodes')
         local transport_port=$((http_port+100))
 
         cat >> ${node}/config/opensearch.yml << __OPENSEARCH_YML
@@ -79,7 +80,7 @@ __OPENSEARCH_YML
     done
 
     echo "waiting for all nodes to join"
-    until [ $(echo ${nodes} | wc -w) -eq $(curl -s localhost:9200/_cat/nodes | wc -l) ]; do
+    until [ "$(echo ${nodes} | wc -w)" -eq "$(curl -s localhost:9200/_cat/nodes | wc -l)" ]; do
         sleep .25
     done
 
@@ -90,7 +91,7 @@ __OPENSEARCH_YML
 
     for node in ${nodes}; do
         echo "stopping ${version}/${node}..."
-        kill $(cat ${node}/pidfile)
+        kill "$(cat ${node}/pidfile)"
     done
 
     popd >> /dev/null
