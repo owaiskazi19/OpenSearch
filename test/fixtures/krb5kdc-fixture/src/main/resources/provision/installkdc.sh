@@ -41,7 +41,6 @@ ENVPROP_FILE=$RESOURCES/env.properties
 LOCALSTATEDIR=/etc
 LOGDIR=/var/log/krb5
 
-MARKER_FILE=/etc/marker
 
 # Pull environment information
 REALM_NAME=$(cat $ENVPROP_FILE | grep realm= | cut -d '=' -f 2)

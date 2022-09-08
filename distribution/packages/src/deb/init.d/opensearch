@@ -19,7 +19,7 @@ NAME=opensearch
 DESC="OpenSearch Server"
 DEFAULT=/etc/default/$NAME
 
-if [ `id -u` -ne 0 ]; then
+if [ "`id -u`" -ne 0 ]; then
 	echo "You need root privileges to run this script"
 	exit 1
 fi
@@ -59,6 +59,7 @@ PID_DIR="/var/run/opensearch"
 
 # overwrite settings from default file
 if [ -f "$DEFAULT" ]; then
+  # shellcheck source=/dev/null
 	. "$DEFAULT"
 fi
 
@@ -105,7 +106,7 @@ case "$1" in
 		ulimit -l $MAX_LOCKED_MEMORY
 	fi
 
-	if [ -n "$MAX_MAP_COUNT" -a -f /proc/sys/vm/max_map_count ] && [ "$MAX_MAP_COUNT" -gt $(cat /proc/sys/vm/max_map_count) ]; then
+	if [ -n "$MAX_MAP_COUNT" ] && [ -f /proc/sys/vm/max_map_count ] && [ "$MAX_MAP_COUNT" -gt "$(cat /proc/sys/vm/max_map_count)" ]; then
 		sysctl -q -w vm.max_map_count=$MAX_MAP_COUNT
 	fi
 
@@ -116,7 +117,7 @@ case "$1" in
 		i=0
 		timeout=10
 		# Wait for the process to be properly started before exiting
-		until { kill -0 `cat "$PID_FILE"`; } >/dev/null 2>&1
+		until { kill -0 "`cat "$PID_FILE"`"; } >/dev/null 2>&1
 		do
 			sleep 1
 			i=$(($i + 1))
