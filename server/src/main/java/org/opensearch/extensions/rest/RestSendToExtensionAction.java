@@ -73,7 +73,7 @@ public class RestSendToExtensionAction extends BaseRestHandler {
         DiscoveryExtensionNode discoveryExtensionNode,
         TransportService transportService
     ) {
-        this.pathPrefix = "/_extensions/_" + restActionsRequest.getUniqueId();
+        this.pathPrefix = "/_plugins/_" + restActionsRequest.getUniqueId();
         List<Route> restActionsAsRoutes = new ArrayList<>();
         for (String restAction : restActionsRequest.getRestActions()) {
             RestRequest.Method method;
