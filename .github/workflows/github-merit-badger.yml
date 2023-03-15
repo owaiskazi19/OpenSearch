@@ -1,7 +1,8 @@
 name: Metrics
 on:
   pull_request_target:
-    types: ['open', 'ready_for_review']
+    types:
+     - opened
 
 jobs:
   call-action:
