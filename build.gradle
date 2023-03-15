@@ -352,10 +352,7 @@ allprojects {
           return
         }
         if (shadowed) {
-          /*
-           * Include the source of shadowed upstream projects so we don't
-           * have to publish their javadoc.
-           */
+         
           project.evaluationDependsOn(upstreamProject.path)
           project.javadoc.source += upstreamProject.javadoc.source
           /*
