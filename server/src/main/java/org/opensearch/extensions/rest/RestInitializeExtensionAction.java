@@ -8,9 +8,12 @@
 
 package org.opensearch.extensions.rest;
 
+import org.opensearch.action.support.master.AcknowledgedRequest;
 import org.opensearch.client.node.NodeClient;
 import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.core.xcontent.XContentParser;
+import org.opensearch.discovery.InitializeExtensionResponse;
+import org.opensearch.extensions.AcknowledgedResponse;
 import org.opensearch.extensions.ExtensionDependency;
 import org.opensearch.extensions.ExtensionScopedSettings;
 import org.opensearch.extensions.ExtensionsManager;
@@ -25,10 +28,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import static org.opensearch.common.xcontent.XContentParserUtils.ensureExpectedToken;
+import static org.opensearch.extensions.ExtensionsManager.EXTENSION_REQUEST_WAIT_TIMEOUT;
 import static org.opensearch.rest.RestRequest.Method.POST;
 
 /**
@@ -37,6 +41,7 @@ import static org.opensearch.rest.RestRequest.Method.POST;
 public class RestInitializeExtensionAction extends BaseRestHandler {
 
     private final ExtensionsManager extensionsManager;
+    private List<CompletableFuture<?>> futures;
 
     @Override
     public String getName() {
@@ -51,6 +56,8 @@ public class RestInitializeExtensionAction extends BaseRestHandler {
     public RestInitializeExtensionAction(ExtensionsManager extensionsManager) {
         this.extensionsManager = extensionsManager;
     }
+
+
 
     @Override
     public RestChannelConsumer prepareRequest(RestRequest request, NodeClient client) throws IOException {
@@ -109,15 +116,16 @@ public class RestInitializeExtensionAction extends BaseRestHandler {
             new ExtensionScopedSettings(Collections.emptySet())
         );
         try {
-            extensionsManager.loadExtension(extension);
-            extensionsManager.initialize();
-        } catch (CompletionException e) {
+            String extensionId = extensionsManager.loadExtension(extension);
+            extensionsManager.initialize(extensionId);
+
+        } catch (ExecutionException e) {
             Throwable cause = e.getCause();
             if (cause instanceof TimeoutException) {
                 return channel -> channel.sendResponse(
                     new BytesRestResponse(RestStatus.REQUEST_TIMEOUT, "No response from extension to request.")
                 );
-            } else if (cause instanceof ConnectTransportException || cause instanceof RuntimeException) {
+            } else if (cause instanceof ConnectTransportException || cause instanceof RuntimeException || cause instanceof InterruptedException) {
                 return channel -> channel.sendResponse(
                     new BytesRestResponse(RestStatus.REQUEST_TIMEOUT, "Connection failed with the extension.")
                 );
@@ -127,8 +135,13 @@ public class RestInitializeExtensionAction extends BaseRestHandler {
             }
         } catch (Exception e) {
             return channel -> channel.sendResponse(new BytesRestResponse(RestStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
-
         }
+
+//        final CompletableFuture<?> inProgressFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+//        inProgressFuture.orTimeout(EXTENSION_REQUEST_WAIT_TIMEOUT, TimeUnit.SECONDS).join();
+        /*for (CompletableFuture<?> future : futures) {
+            future.isDone();
+        }*/
 
         return channel -> {
             try (XContentBuilder builder = channel.newBuilder()) {

@@ -59,7 +59,7 @@ public class NoopExtensionsManager extends ExtensionsManager {
     }
 
     @Override
-    public void initialize() {
+    public void initialize(String extensionId) {
         // no-op
     }
 

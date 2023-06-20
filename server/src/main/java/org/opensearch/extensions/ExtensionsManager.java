@@ -10,13 +10,8 @@ package org.opensearch.extensions;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -30,8 +25,8 @@ import org.opensearch.client.node.NodeClient;
 import org.opensearch.cluster.ClusterSettingsResponse;
 import org.opensearch.cluster.service.ClusterService;
 import org.opensearch.common.settings.Setting;
-import org.opensearch.core.common.Strings;
 import org.opensearch.common.util.concurrent.AbstractRunnable;
+import org.opensearch.core.common.Strings;
 import org.opensearch.common.io.stream.StreamInput;
 import org.opensearch.common.settings.Settings;
 import org.opensearch.common.settings.SettingsModule;
@@ -51,11 +46,7 @@ import org.opensearch.extensions.rest.RestActionsRequestHandler;
 import org.opensearch.extensions.settings.CustomSettingsRequestHandler;
 import org.opensearch.extensions.settings.RegisterCustomSettingsRequest;
 import org.opensearch.threadpool.ThreadPool;
-import org.opensearch.transport.ConnectTransportException;
-import org.opensearch.transport.TransportException;
-import org.opensearch.transport.TransportResponse;
-import org.opensearch.transport.TransportResponseHandler;
-import org.opensearch.transport.TransportService;
+import org.opensearch.transport.*;
 import org.opensearch.env.EnvironmentSettingsResponse;
 
 /**
@@ -99,6 +90,7 @@ public class ExtensionsManager {
     private TransportService transportService;
     private ClusterService clusterService;
     private final Set<Setting<?>> additionalSettings;
+    private ExecutorService service;
     private Settings environmentSettings;
     private AddSettingsUpdateConsumerRequestHandler addSettingsUpdateConsumerRequestHandler;
     private NodeClient client;
@@ -291,7 +283,7 @@ public class ExtensionsManager {
      * Loads a single extension
      * @param extension The extension to be loaded
      */
-    public void loadExtension(Extension extension) throws IOException {
+    public String loadExtension(Extension extension) throws IOException {
         try {
             validateExtension(extension);
             DiscoveryExtensionNode discoveryExtensionNode = new DiscoveryExtensionNode(
@@ -311,6 +303,7 @@ public class ExtensionsManager {
         } catch (IllegalArgumentException e) {
             throw e;
         }
+        return extension.getUniqueId();
 
     }
 
@@ -338,13 +331,43 @@ public class ExtensionsManager {
     /**
      * Iterate through all extensions and initialize them.  Initialized extensions will be added to the {@link #initializedExtensions}.
      */
-    public void initialize() {
+    public void initialize(String extensionId) throws Exception {
+        /*List<CompletableFuture<?>> futures = new ArrayList<>();
         for (DiscoveryExtensionNode extension : extensionIdMap.values()) {
-            initializeExtension(extension);
-        }
+            CompletableFuture<?> future = initializeExtension(extension);
+//            CompletableFuture.allOf(future).join();
+            futures.add(future);
+        }*/
+        DiscoveryExtensionNode extensionNode = extensionIdMap.get(extensionId);
+        CompletableFuture<?> future = initializeExtension(extensionNode);
+
+        CompletableFuture.allOf(future).join();
+
+
+
+       // getAllCompleted(futures, EXTENSION_REQUEST_WAIT_TIMEOUT + 1, TimeUnit.SECONDS);
+        service.shutdown();
+        service.awaitTermination(EXTENSION_REQUEST_WAIT_TIMEOUT + 1, TimeUnit.SECONDS);
+        //return futures;
     }
 
-    private void initializeExtension(DiscoveryExtensionNode extension) {
+    public List<?> getAllCompleted(List<CompletableFuture<?>> futuresList, long timeout, TimeUnit unit) {
+        CompletableFuture<Void> allFuturesResult = CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[futuresList.size()]));
+        try {
+            allFuturesResult.get(timeout, unit);
+        } catch (Exception e) {
+            // you may log it
+        }
+
+        CompletableFuture.allOf(allFuturesResult).join();
+        return futuresList
+            .stream()
+            .filter(future -> future.isDone() && !future.isCompletedExceptionally()) // keep only the ones completed
+            .map(CompletableFuture::join) // get the value from the completed future
+            .collect(Collectors.toList()); // collect as a list*/
+    }
+
+    private CompletableFuture initializeExtension(DiscoveryExtensionNode extension) throws Exception {
 
         final CompletableFuture<InitializeExtensionResponse> inProgressFuture = new CompletableFuture<>();
         final TransportResponseHandler<InitializeExtensionResponse> initializeExtensionResponseHandler = new TransportResponseHandler<
@@ -372,6 +395,7 @@ public class ExtensionsManager {
             public void handleException(TransportException exp) {
                 logger.error(new ParameterizedMessage("Extension initialization failed"), exp);
                 inProgressFuture.completeExceptionally(exp);
+                throw exp;
             }
 
             @Override
@@ -381,18 +405,23 @@ public class ExtensionsManager {
         };
 
         logger.info("Sending extension request type: " + REQUEST_EXTENSION_ACTION_NAME);
-        transportService.getThreadPool().generic().execute(new AbstractRunnable() {
+        service = transportService.getThreadPool().generic();
+        service.submit(new AbstractRunnable() {
             @Override
             public void onFailure(Exception e) {
-                if (e.getCause() instanceof ConnectTransportException) {
-                    logger.info("No response from extension to request.", e);
-                    throw (ConnectTransportException) e.getCause();
-                } else if (e.getCause() instanceof RuntimeException) {
-                    throw (RuntimeException) e.getCause();
-                } else if (e.getCause() instanceof Error) {
-                    throw (Error) e.getCause();
-                } else {
-                    throw new RuntimeException(e.getCause());
+                if (inProgressFuture.completeExceptionally(e)) {
+                    extensionIdMap.remove(extension.getId());
+                    logger.info("Connection Error!", e);
+                    if (e.getCause() instanceof ConnectTransportException) {
+                        logger.info("No response from extension to request.", e);
+                        throw (ConnectTransportException) e.getCause();
+                    } else if (e.getCause() instanceof RuntimeException) {
+                        throw (RuntimeException) e.getCause();
+                    } else if (e.getCause() instanceof Error) {
+                        throw (Error) e.getCause();
+                    } else {
+                        throw new RuntimeException(e.getCause());
+                    }
                 }
             }
 
@@ -406,8 +435,102 @@ public class ExtensionsManager {
                     initializeExtensionResponseHandler
                 );
                 inProgressFuture.orTimeout(EXTENSION_REQUEST_WAIT_TIMEOUT, TimeUnit.SECONDS).join();
+//                inProgressFuture.complete(null);
             }
         });
+
+
+
+
+
+
+
+        // Create completablefuture
+//        final CompletableFuture<AcknowledgedResponse> extensionResponseFuture = new CompletableFuture<>();
+       // ExecutorService service = transportService.getThreadPool().generic();
+       /* Future<?> future = service.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    transportService.connectToExtensionNode(extension);
+                    transportService.sendRequest(
+                        extension,
+                        REQUEST_EXTENSION_ACTION_NAME,
+                        new InitializeExtensionRequest(transportService.getLocalNode(), extension),
+                        initializeExtensionResponseHandler
+                    );
+                    //complete future
+                    inProgressFuture.orTimeout(EXTENSION_REQUEST_WAIT_TIMEOUT, TimeUnit.SECONDS).join();
+                } catch (Exception e) {
+                    if (e instanceof ConnectTransportException) {
+                        logger.info("No response from extension to request.", e);
+                        throw (ConnectTransportException) e.getCause();
+                    }
+                    else if (e.getCause() instanceof RuntimeException) {
+                        throw (RuntimeException) e.getCause();
+                    } else if (e.getCause() instanceof Error) {
+                        throw (Error) e.getCause();
+                    } else {
+                        throw new RuntimeException(e.getCause());
+                    }
+                }
+            }
+            boolean serviceDone = service.awaitTermination(EXTENSION_REQUEST_WAIT_TIMEOUT, TimeUnit.SECONDS);
+        });*/
+
+
+       /* Future<?> future = service.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                logger.info("Before connectToNodeExtenionNode");
+                    transportService.connectToExtensionNode(extension);
+                logger.info("After connectToNodeExtenionNode");
+                    transportService.sendRequest(
+                        extension,
+                        REQUEST_EXTENSION_ACTION_NAME,
+                        new InitializeExtensionRequest(transportService.getLocalNode(), extension),
+                        initializeExtensionResponseHandler
+                    );
+                    //complete future
+                    inProgressFuture.orTimeout(EXTENSION_REQUEST_WAIT_TIMEOUT, TimeUnit.SECONDS).join();
+                return null;
+            }
+        });
+
+        try {
+            future.get();
+        } catch (ExecutionException e) {
+            if (e instanceof ExecutionException) {
+                logger.info("No response from extension to request.", e);
+                throw (ConnectTransportException) e.getCause();
+            }
+            else if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            } else if (e.getCause() instanceof Error) {
+                throw (Error) e.getCause();
+            } else {
+                throw new RuntimeException(e.getCause());
+            }
+        }
+
+        service.shutdown();*/
+
+
+
+//        Future<?> future = service.submit(() -> {
+
+
+
+//        service.awaitTermination(EXTENSION_REQUEST_WAIT_TIMEOUT + 1, TimeUnit.SECONDS);
+        //timeout in progress
+//        if (inProgressFuture.isCompletedExceptionally()) {
+//            throw new RuntimeException("Connection interupted!");
+//        }
+
+//        extensionResponseFuture.orTimeout(EXTENSION_REQUEST_WAIT_TIMEOUT, TimeUnit.SECONDS).join();
+    //return future;
+
+        return inProgressFuture;
     }
 
     /**
