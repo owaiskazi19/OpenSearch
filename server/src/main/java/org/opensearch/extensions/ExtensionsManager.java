@@ -564,10 +564,6 @@ public class ExtensionsManager {
         return extensionsPath;
     }
 
-    TransportService getTransportService() {
-        return transportService;
-    }
-
     ClusterService getClusterService() {
         return clusterService;
     }
