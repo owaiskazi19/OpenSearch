@@ -1,4 +1,4 @@
-<a href="https://opensearch.org/">
+i<a href="https://opensearch.org/">
   <img src="https://opensearch.org/assets/img/opensearch-logo-themed.svg" height="64px">
 </a>
 
